@@ -45,6 +45,8 @@ CREATE TABLE tables (
     floor_id   INT          NOT NULL REFERENCES floors(id) ON DELETE CASCADE,
     table_no   VARCHAR(20)  NOT NULL,
     capacity   SMALLINT     NOT NULL DEFAULT 4 CHECK (capacity > 0),
+    status     VARCHAR(20)  NOT NULL DEFAULT 'available'
+                                CHECK (status IN ('available', 'occupied')),
     is_active  BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     UNIQUE (floor_id, table_no)
@@ -54,6 +56,7 @@ CREATE TABLE categories (
     id          SERIAL       PRIMARY KEY,
     name        VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
+    color       VARCHAR(20)  NOT NULL DEFAULT '#6366f1', -- hex or CSS color token
     sort_order  SMALLINT     NOT NULL DEFAULT 0,
     is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -75,11 +78,12 @@ CREATE TABLE products (
 CREATE TABLE product_variants (
     id            SERIAL         PRIMARY KEY,
     product_id    INT            NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    name          VARCHAR(100)   NOT NULL,          -- e.g. "Large", "Extra Spicy"
-    price_delta   NUMERIC(10, 2) NOT NULL DEFAULT 0, -- added to base_price
+    attribute     VARCHAR(100)   NOT NULL,          -- e.g. "Size", "Spice Level"
+    value         VARCHAR(100)   NOT NULL,          -- e.g. "Large", "Extra Hot"
+    price_delta   NUMERIC(10, 2) NOT NULL DEFAULT 0, -- mapped from extraPrice in API
     is_available  BOOLEAN        NOT NULL DEFAULT TRUE,
     created_at    TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
-    UNIQUE (product_id, name)
+    UNIQUE (product_id, attribute, value)
 );
 
 CREATE TABLE pos_sessions (

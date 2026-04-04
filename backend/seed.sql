@@ -31,10 +31,10 @@ INSERT INTO tables (floor_id, table_no, capacity) VALUES
   (2, 'F-03', 8);
 
 -- ── 4. Categories (3) ─────────────────────────────────────────
-INSERT INTO categories (name, description, sort_order) VALUES
-  ('Starters',   'Appetizers and finger food',         1),
-  ('Main Course','Primary dishes and rice preparations', 2),
-  ('Beverages',  'Hot and cold drinks',                3);
+INSERT INTO categories (name, color, description, sort_order) VALUES
+  ('Starters',    '#f43f5e', 'Appetizers and finger food',          1),
+  ('Main Course', '#f97316', 'Primary dishes and rice preparations', 2),
+  ('Beverages',   '#06b6d4', 'Hot and cold drinks',                 3);
 
 -- ── 5. Products (5) ───────────────────────────────────────────
 INSERT INTO products (category_id, name, description, base_price) VALUES
@@ -46,28 +46,28 @@ INSERT INTO products (category_id, name, description, base_price) VALUES
 
 -- ── 6. Product Variants (10) ──────────────────────────────────
 -- Paneer Tikka (product_id = 1)
-INSERT INTO product_variants (product_id, name, price_delta) VALUES
-  (1, 'Regular (250g)',  0.00),
-  (1, 'Large (500g)',   100.00);
+INSERT INTO product_variants (product_id, attribute, value, price_delta) VALUES
+  (1, 'Portion', 'Regular (250g)',  0.00),
+  (1, 'Portion', 'Large (500g)',  100.00);
 
 -- Veg Spring Rolls (product_id = 2)
-INSERT INTO product_variants (product_id, name, price_delta) VALUES
-  (2, '4 Pieces',   0.00),
-  (2, '8 Pieces',  120.00);
+INSERT INTO product_variants (product_id, attribute, value, price_delta) VALUES
+  (2, 'Quantity', '4 Pieces',   0.00),
+  (2, 'Quantity', '8 Pieces', 120.00);
 
 -- Butter Chicken (product_id = 3)
-INSERT INTO product_variants (product_id, name, price_delta) VALUES
-  (3, 'Half',    0.00),
-  (3, 'Full',  150.00);
+INSERT INTO product_variants (product_id, attribute, value, price_delta) VALUES
+  (3, 'Serving', 'Half',   0.00),
+  (3, 'Serving', 'Full', 150.00);
 
 -- Dal Tadka (product_id = 4)
-INSERT INTO product_variants (product_id, name, price_delta) VALUES
-  (4, 'Regular', 0.00),
-  (4, 'Jain (no onion/garlic)', 20.00);
+INSERT INTO product_variants (product_id, attribute, value, price_delta) VALUES
+  (4, 'Preference', 'Regular',              0.00),
+  (4, 'Preference', 'Jain (no onion/garlic)', 20.00);
 
 -- Fresh Lime Soda (product_id = 5)
-INSERT INTO product_variants (product_id, name, price_delta) VALUES
-  (5, 'Sweet',  0.00),
-  (5, 'Salted', 0.00);
+INSERT INTO product_variants (product_id, attribute, value, price_delta) VALUES
+  (5, 'Flavour', 'Sweet',  0.00),
+  (5, 'Flavour', 'Salted', 0.00);
 
 COMMIT;
