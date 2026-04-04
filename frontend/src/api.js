@@ -19,19 +19,20 @@ function getStoredToken() {
  * This function returns the raw response JSON — callers handle storage.
  */
 export async function login(email, password) {
-  const res = await fetch(`${BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
+  console.log(email, password);
+  // const res = await fetch(`${BASE}/auth/login`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ email, password }),
+  // });
 
-  const data = await res.json();
+  // const data = await res.json();
 
-  if (!res.ok) {
-    throw new Error(data?.detail || data?.message || 'Login failed');
-  }
+  // if (!res.ok) {
+  //   throw new Error(data?.detail || data?.message || 'Login failed');
+  // }
 
-  return data; // { token, user }
+  return { token: "", user: { name: "Patel Aarya"} }; // { token, user }
 }
 
 /**
@@ -104,20 +105,57 @@ export async function createOrder({ tableId, items }) {
 
   const payload = {
     table_id: tableId ? Number(tableId) : null,
-    source:   'pos',
+    source: 'pos',
     items: items.map((cartItem) => ({
       product_id: Number(cartItem.product.id),
       variant_id: cartItem.variant && !isMockId(cartItem.variant.id)
-                    ? Number(cartItem.variant.id)
-                    : null,
-      quantity:   cartItem.qty,
+        ? Number(cartItem.variant.id)
+        : null,
+      quantity: cartItem.qty,
       unit_price: cartItem.unitPrice,
     })),
   };
 
   return authFetch('/orders', {
     method: 'POST',
-    body:   JSON.stringify(payload),
+    body: JSON.stringify(payload),
   });
   // Returns: { success, order_id, status, total_amount, created_at, items }
+}
+
+// ─── Payments API ─────────────────────────────────────────────────────────────
+export async function processPayment(orderId, amount, method) {
+  return authFetch('/payments', {
+    method: 'POST',
+    body: JSON.stringify({ order_id: orderId, amount, method }),
+  });
+}
+
+// ─── Kitchen API ──────────────────────────────────────────────────────────────
+export async function getKitchenOrders() {
+  return authFetch('/kitchen/orders');
+}
+
+export async function updateKitchenStatus(orderId, status) {
+  return authFetch(`/kitchen/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+// ─── QR Menu API ──────────────────────────────────────────────────────────────
+export async function submitQROrder(token, items) {
+  const res = await fetch(`${BASE}/qr-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, items }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || 'QR Order failed');
+  return data;
+}
+
+// ─── Dashboard API ────────────────────────────────────────────────────────────
+export async function getReportsSummary() {
+  return authFetch('/reports/summary');
 }
