@@ -113,10 +113,62 @@ async function updateOrderStatus(id, status) {
     return rows[0] ?? null;
 }
 
+// ── Fetch active kitchen orders ─────────────────────────────────
+async function findActiveKitchenOrders() {
+    // Orders that are not paid/completed, or based on specific statuses
+    const { rows: orderRows } = await pool.query(
+        `SELECT  o.id,
+                 o.table_id,
+                 t.table_no,
+                 o.status,
+                 o.note,
+                 o.created_at
+         FROM    orders  o
+         LEFT JOIN tables t ON t.id = o.table_id
+         WHERE   o.status NOT IN ('paid')
+         ORDER   BY o.created_at ASC`
+    );
+
+    if (orderRows.length === 0) return [];
+
+    const orderIds = orderRows.map(o => o.id);
+
+    const { rows: itemRows } = await pool.query(
+        `SELECT  oi.id,
+                 oi.order_id,
+                 oi.product_id,
+                 p.name           AS product_name,
+                 oi.variant_id,
+                 pv.attribute     AS variant_attribute,
+                 pv.value         AS variant_value,
+                 oi.quantity,
+                 oi.note
+         FROM    order_items     oi
+         JOIN    products        p  ON p.id  = oi.product_id
+         LEFT JOIN product_variants pv ON pv.id = oi.variant_id
+         WHERE   oi.order_id = ANY($1)
+         ORDER   BY oi.id ASC`,
+        [orderIds]
+    );
+
+    // Group items by order
+    const itemsByOrder = itemRows.reduce((acc, item) => {
+        if (!acc[item.order_id]) acc[item.order_id] = [];
+        acc[item.order_id].push(item);
+        return acc;
+    }, {});
+
+    return orderRows.map(order => ({
+        ...order,
+        items: itemsByOrder[order.id] || []
+    }));
+}
+
 module.exports = {
     insertOrder,
     insertOrderItem,
     findAllOrders,
     findOrderById,
     updateOrderStatus,
+    findActiveKitchenOrders,
 };

@@ -20,7 +20,7 @@ DROP TYPE IF EXISTS user_role     CASCADE;
 DROP TYPE IF EXISTS order_status  CASCADE;
 
 CREATE TYPE user_role    AS ENUM ('admin', 'cashier', 'waiter', 'kitchen');
-CREATE TYPE order_status AS ENUM ('draft', 'confirmed', 'preparing', 'ready', 'completed', 'paid');
+CREATE TYPE order_status AS ENUM ('draft', 'confirmed', 'preparing', 'ready', 'served', 'completed', 'paid');
 
 CREATE TABLE users (
     id            SERIAL        PRIMARY KEY,
