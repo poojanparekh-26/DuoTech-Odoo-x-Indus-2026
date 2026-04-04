@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
-import { authFetch } from '../api';
+import { authFetch, createOrder } from '../api';
 
 // ─── Mock data (fallback when API is unreachable) ──────────────────────────────
 const MOCK_CATEGORIES = [
@@ -132,9 +132,10 @@ export default function OrderPage() {
   const [activeCat, setActiveCat] = useState(null);        // null = All
 
   // ── Cart state ────────────────────────────────────────────────
-  const [cartItems,  setCartItems]  = useState([]);
-  const [confirming, setConfirming] = useState(false);
-  const [orderError, setOrderError] = useState('');
+  const [cartItems,   setCartItems]   = useState([]);
+  const [confirming,  setConfirming]  = useState(false);
+  const [orderError,  setOrderError]  = useState('');
+  const [orderSuccess,setOrderSuccess]= useState(null); // { orderId, total } | null
 
   // ── Fetch table info ──────────────────────────────────────────
   useEffect(() => {
@@ -224,32 +225,22 @@ export default function OrderPage() {
     if (cartItems.length === 0) return;
     setConfirming(true);
     setOrderError('');
-
-    const rawSession = localStorage.getItem('activeSession');
-    const session    = rawSession ? JSON.parse(rawSession) : null;
-
-    const payload = {
-      tableId:   Number(tableId),
-      sessionId: session?.id ?? null,
-      items: cartItems.map(i => ({
-        productId: i.product.id,
-        variantId: i.variant?.id ?? null,
-        quantity:  i.qty,
-        unitPrice: i.unitPrice,
-      })),
-    };
+    setOrderSuccess(null);
 
     try {
-      const res = await authFetch('/orders', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      const orderId = res?.data?.id ?? res?.id ?? `mock-${Date.now()}`;
-      navigate(`/payment?orderId=${orderId}`);
+      const res = await createOrder({ tableId, items: cartItems });
+      // res = { success, order_id, status, total_amount, created_at, items }
+      const orderId = res?.order_id ?? res?.id ?? `mock-${Date.now()}`;
+      const total   = res?.total_amount ?? null;
+
+      setOrderSuccess({ orderId, total });
+      setCartItems([]);   // clear cart on success
+
+      // Navigate to payment after a short delay so the toast is visible
+      setTimeout(() => navigate(`/payment?orderId=${orderId}`), 1800);
     } catch (err) {
-      // Graceful fallback — still navigate with a mock order ID so the UI flow isn't broken
-      console.warn('[OrderPage] POST /orders failed, using mock orderId:', err.message);
-      navigate(`/payment?orderId=mock-${Date.now()}`);
+      console.error('[OrderPage] createOrder failed:', err.message);
+      setOrderError(err.message || 'Failed to place order. Please try again.');
     } finally {
       setConfirming(false);
     }
@@ -328,7 +319,26 @@ export default function OrderPage() {
 
         {/* ── Cart panel ──────────────────────────────── */}
         <aside className="hidden md:flex w-80 xl:w-96 shrink-0 flex-col border-l border-slate-800 overflow-hidden">
-          {/* Order error */}
+
+          {/* ── Success toast ── */}
+          {orderSuccess && (
+            <div className="mx-3 mt-3 flex items-start gap-2.5 px-3 py-3 rounded-xl
+                            bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0 mt-px" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="9 12 11 14 15 10"/>
+              </svg>
+              <div>
+                <p className="font-semibold">Order #{orderSuccess.orderId} placed!</p>
+                {orderSuccess.total != null && (
+                  <p className="text-emerald-500/80 mt-0.5">Total ₹{Number(orderSuccess.total).toFixed(2)} — redirecting to payment…</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Error banner ── */}
           {orderError && (
             <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500/10
                             border border-rose-500/25 text-rose-400 text-xs">
