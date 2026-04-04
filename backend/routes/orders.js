@@ -15,6 +15,7 @@ const {
     listOrders,
     getOrderById,
     patchOrderStatus,
+    payOrder,
 } = require('../controllers/orderController');
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.post('/',               createOrder);
 router.get('/',                listOrders);
 router.get('/:id',             getOrderById);
 router.patch('/:id/status',    patchOrderStatus);
+router.patch('/:id/pay',       payOrder);
 
 module.exports = router;

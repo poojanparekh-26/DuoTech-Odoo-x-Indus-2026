@@ -208,9 +208,44 @@ async function patchOrderStatus(req, res) {
     }
 }
 
+// ── PATCH /api/orders/:id/pay ─────────────────────────────────────
+async function payOrder(req, res) {
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id) || id <= 0) {
+        return res.status(400).json({ success: false, message: 'Order id must be a positive integer.' });
+    }
+
+    try {
+        const current = await findOrderById(id);
+        if (!current) {
+            return res.status(404).json({ success: false, message: `Order ${id} not found.` });
+        }
+
+        if (current.status === 'paid') {
+            return res.status(400).json({ success: false, message: `Order ${id} is already paid.` });
+        }
+
+        const updated = await updateOrderStatus(id, 'paid');
+
+        return res.status(200).json({
+            success:      true,
+            message:      'Order successfully marked as paid.',
+            order_id:     updated.id,
+            status:       updated.status,
+            total_amount: Number(updated.total_amount),
+            updated_at:   updated.updated_at,
+        });
+    } catch (err) {
+        console.error('[payOrder]', err);
+        return res.status(500).json({ success: false, message: 'Failed to update order status to paid.' });
+    }
+}
+
 module.exports = {
     createOrder,
     listOrders,
     getOrderById,
     patchOrderStatus,
+    payOrder,
 };

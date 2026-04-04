@@ -132,12 +132,12 @@ CREATE TABLE kitchen_orders (
 );
 
 CREATE TABLE payments (
-    id         SERIAL         PRIMARY KEY,
-    order_id   INT            NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
-    method     VARCHAR(10)    NOT NULL CHECK (method IN ('cash', 'card', 'upi')),
-    amount     NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
-    reference  VARCHAR(255),                      -- card/upi transaction reference
-    created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+    id             SERIAL         PRIMARY KEY,
+    order_id       INT            NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+    payment_method VARCHAR(10)    NOT NULL CHECK (payment_method IN ('cash', 'card', 'upi')),
+    amount         NUMERIC(10, 2) NOT NULL CHECK (amount > 0),
+    payment_status VARCHAR(20)    NOT NULL DEFAULT 'paid',
+    created_at     TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE qr_tokens (
