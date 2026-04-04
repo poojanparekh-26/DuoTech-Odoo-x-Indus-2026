@@ -99,7 +99,7 @@ CREATE TABLE pos_sessions (
 
 CREATE TABLE orders (
     id           SERIAL          PRIMARY KEY,
-    session_id   INT             NOT NULL REFERENCES pos_sessions(id) ON DELETE RESTRICT,
+    session_id   INT             REFERENCES pos_sessions(id) ON DELETE RESTRICT,
     table_id     INT             REFERENCES tables(id) ON DELETE SET NULL,
     status       order_status    NOT NULL DEFAULT 'draft',
     total_amount NUMERIC(10, 2)  NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
