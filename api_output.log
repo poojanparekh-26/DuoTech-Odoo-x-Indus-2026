@@ -1,0 +1,22 @@
+---- STEP 2: API HEALTH CHECK ----
+✅ GET /health - Status: 200
+\n-- Auth Flow --
+❌ POST /auth/signup - Status: 409 - Error: {"success":false,"error":"An account with this email already exists."}
+✅ POST /auth/login - Status: 200
+\n-- Category Flow --
+✅ GET /categories - Status: 200
+✅ POST /categories - Status: 201
+\n-- Product Flow --
+✅ GET /products - Status: 200
+✅ POST /products - Status: 201
+\n-- Floors Flow --
+✅ GET /floors - Status: 200
+❌ POST /sessions - Status: 400 - Error: {"success":false,"error":"Key (pos_id)=(60000000-0000-0000-0000-000000000001) is not present in table \"pos_configs\"."}
+\n-- Order Flow --
+✅ GET /orders - Status: 200
+❌ POST /orders - Status: 400 - Error: {"success":false,"error":"Key (session_id)=(90000000-0000-0000-0000-000000000001) is not present in table \"sessions\"."}
+\n-- Payment Flow --
+Skipping payment because order was not created.
+❌ POST /payments - Status: 400 - Error: {"success":false,"error":"orderId, paymentMethodId, and amount are required."}
+\n-- Report Flow --
+✅ GET /reports/dashboard - Status: 200
